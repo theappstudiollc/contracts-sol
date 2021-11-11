@@ -13,11 +13,10 @@
   },
   "license": "MIT",
   "author": "DS Mitchell",
-  "files": ["contracts/"],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/theappstudiollc/contracts-sol.git"
-  },
+  "files": [
+    "contracts/"
+  ],
+  "repository": "git+https://github.com/theappstudiollc/contracts-sol.git",
   "dependencies": {
     "@openzeppelin/contracts": "^4.3.2",
     "base64-sol": "^1.1.0"

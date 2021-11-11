@@ -7,12 +7,12 @@ Currently the feature-set is kept small to ensure that your contract size remain
 Available as a package. Add it to `package.json`:
 
 ```
-"@theappstudiollc/contracts": "0.9.0"
+"@theappstudio/contracts": "0.9.0"
 ```
 
 and import it in solidity:
 
 ```
-import "@theappstudiollc/contracts/utils/OnChain.sol";
-import "@theappstudiollc/contracts/utils/SVG.sol";
+import "@theappstudio/contracts/utils/OnChain.sol";
+import "@theappstudio/contracts/utils/SVG.sol";
 ```

@@ -55,6 +55,12 @@ describe("SVG", function () {
     it("Should generate bare svg color strings", async function () {
         expect(await svg.colorAttribute(zeroOneTwo, 2)).to.equal("rgb(0,1,2)")
     })
+
+    it("Should correctly convert packed colors", async function() {
+        expectColorToEqual(await svg.fromPackedColor(0x000000), 0x000000, "black")
+        expectColorToEqual(await svg.fromPackedColor(0x010101), 0x010101, "one")
+        expectColorToEqual(await svg.fromPackedColor(0xFFFFFF), 0xFFFFFF, "white")
+    })
     
     it("Should generate svg color type error", async function () {
         await expect(svg.colorAttribute(zeroOneTwo, 3)).to.be.reverted

@@ -28,7 +28,7 @@ contract SVGMock {
     }
 
     /// Returns an ISVGTypes.Color based on a packed representation of r, g, and b
-    function fromPackedColor(uint24 packedColor) internal pure returns (ISVGTypes.Color memory color) {
+    function fromPackedColor(uint24 packedColor) public pure returns (ISVGTypes.Color memory color) {
         return SVG.fromPackedColor(packedColor);
     }
 

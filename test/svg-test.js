@@ -67,6 +67,7 @@ describe("SVG", function () {
     })
 
     it("Should brighten by 3%", async function () {
+        expectColorToEqual(await svg.brightenColor(black, 3, 0), 0x000000, "black->black")
         expectColorToEqual(await svg.brightenColor(black, 3, 1), 0x010101, "black->1")
         expectColorToEqual(await svg.brightenColor(one, 3, 0), 0x010101, "one->one")
         expectColorToEqual(await svg.brightenColor([0x21, 0x21, 0x21, 0xFF], 3, 0), 0x212121, "before threshold")
@@ -82,9 +83,18 @@ describe("SVG", function () {
         expectColorToEqual(await svg.brightenColor(white, 100, 1), 0xFFFFFF, "max limit + 1")
     })
 
+    it("Should revert with RatioInvalid", async function() {
+        await expect(svg.mixColors(black, white, 101, 100)).to.be.revertedWith("RatioInvalid")
+    })
+
     it("Should mix colors matching black", async function () {
         expectColorToEqual(await svg.mixColors(black, white, 100, 100), 0x000000, "black/white 100")
         expectColorToEqual(await svg.mixColors(black, white, 100, 97), 0x000000, "black/white 97")
+        expectColorToEqual(await svg.mixColors(black, white, 100, 103), 0x000000, "black/white 103")
+    })
+
+    it("Should mix colors matching midpoint", async function () {
+        expectColorToEqual(await svg.mixColors(black, white, 50, 100), 0x7F7F7F, "black/white 50%")
     })
 
     it("Should mix colors matching white", async function () {
@@ -92,10 +102,15 @@ describe("SVG", function () {
         expectColorToEqual(await svg.mixColors(black, white, 0, 103), 0xFFFFFF, "black/white 103")
     })
 
+    it("Should undermix white and overmix black", async function() {
+        expectColorToEqual(await svg.mixColors(black, white, 99, 103), 0x020202, "black/white 103")
+        expectColorToEqual(await svg.mixColors(black, white, 0, 97), 0xF7F7F7, "black/white 97")
+    })
+
     var expectColorToEqual = (color, expected, message) => {
         expect(color[0]).to.equal(expected >> 16, `${message}: red fail`)
         expect(color[1]).to.equal((expected & 0xFF00) >> 8, `${message}: green fail`)
         expect(color[2]).to.equal(expected & 0xFF, `${message}: blue fail`)
-        // expect(color[3]).to.equal(0xFF, "alpha fail")
+        // expect(color[3]).to.equal(0xFF, `${message}: alpha fail`)
     }
 })

@@ -4,22 +4,25 @@ const { ethers } = require("hardhat")
 describe("SubscribableService", function () {
 
     let subscribableService
-    let subscriptionPrice = 50
+    let subscriptionPrice = 0.01 // ETH
 
     beforeEach(async () => {
         const SubscribableService = await ethers.getContractFactory("SubscribableServiceMock")
-        subscribableService = await SubscribableService.deploy(subscriptionPrice)
+        let wei = ethers.utils.parseEther(subscriptionPrice.toString())
+        subscribableService = await SubscribableService.deploy(wei)
         await subscribableService.deployed()
     })
 
     it("Should return subscription price", async function() {
-        expect(await subscribableService.subscriptionPrice()).to.be.equal(subscriptionPrice)
+        let wei = ethers.utils.parseEther(subscriptionPrice.toString())
+        expect(await subscribableService.subscriptionPrice()).to.be.equal(wei)
     })
 
     it("Should change subscriptionPrice", async function() {
         let newPrice = subscriptionPrice * 2
-        await subscribableService.changePrice(newPrice)
-        expect(await subscribableService.subscriptionPrice()).to.be.equal(newPrice)
+        let wei = ethers.utils.parseEther(newPrice.toString())
+        await subscribableService.changePrice(wei)
+        expect(await subscribableService.subscriptionPrice()).to.be.equal(wei)
     })
 
     it("Should revert with AddressAlreadySubscribed", async function() {
@@ -52,6 +55,20 @@ describe("SubscribableService", function () {
         var price = await subscribableService.subscriptionPrice()
         await subscribableService.subscribe(subscribableService.address, { value: price })
         expect(await subscribableService.collectedFees()).to.be.equal(price)
+    })
+
+    it("Should withdraw all fees", async function() {
+        // Subscribe to add some collected fees
+        var price = await subscribableService.subscriptionPrice()
+        await subscribableService.subscribe(subscribableService.address, { value: price })
+        // Capture the current owner's balance and withdraw
+        const [owner] = await ethers.getSigners()
+        var balance = await ethers.provider.getBalance(owner.address);
+        await subscribableService.withdraw() // This incurs a gas cost on the owner
+        // Verify balances and collected fees
+        var updatedBalance = await ethers.provider.getBalance(owner.address)
+        expect(updatedBalance.gt(balance)).to.be.true
+        expect(await subscribableService.collectedFees()).to.be.equal(0)
     })
 
     it("Should return correct subscribers", async function() {

@@ -30,4 +30,11 @@ contract SubscribableServiceMock is SubscribableService, Ownable {
     function currentSubscribers() public view returns (address[] memory) {
         return _subscribers.addresses;
     }
+
+    /// Withdraws all funds to the owner's wallet
+    /// @dev Also resets the collected fees
+    function withdraw() public payable onlyOwner {
+        payable(owner()).transfer(address(this).balance);
+        _collectedFees = 0;
+    }
 }

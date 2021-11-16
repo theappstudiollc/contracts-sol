@@ -3,46 +3,67 @@ pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "../interfaces/ISVGTypes.sol";
+import "./OnChain.sol";
 import "./SVGErrors.sol";
 
 /// @title SVG image library
+/**
+ * @dev These methods are best suited towards view/pure only function calls (ALL the way through the call stack).
+ * Do not waste gas using these methods in functions that also update state, unless your need requires it.
+ */
 library SVG {
 
     using Strings for uint256;
 
-    /// Returns the root SVG element based on the supplied width, height, and contents
-    /// @dev contents is usually generated from abi.encodePacked
-    /// @param width The width of the SVG view box
-    /// @param height The height of the SVG view box
-    /// @param contents The contents of the svg, as bytes
-    /// @return a bytes collection representing a root SVG element
-    function createSVG(uint256 width, uint256 height, bytes memory contents) internal pure returns (bytes memory) {
-        return abi.encodePacked("<svg viewBox='0 0 ", width.toString(), " ", height.toString(), "' xmlns='http://www.w3.org/2000/svg' version='1.1'>", contents, "</svg>");
+    /// Returns a named element based on the supplied attributes and contents
+    /// @dev attributes and contents is usually generated from abi.encodePacked, attributes is expecting a leading space
+    /// @param name The name of the element
+    /// @param attributes The attributes of the element, as bytes, with a leading space
+    /// @param contents The contents of the element, as bytes
+    /// @return a bytes collection representing the whole element
+    function createElement(string memory name, bytes memory attributes, bytes memory contents) internal pure returns (bytes memory) {
+        return abi.encodePacked(
+            "<", attributes.length == 0 ? bytes(name) : abi.encodePacked(name, attributes),
+            contents.length == 0 ? bytes("/>") : abi.encodePacked(">", contents, "</", name, ">")
+        );
     }
 
-    /// Returns a `path` SVG element with the provided attributes and contents
-    /// @dev If your use-case does not utilize `attributes` and/or `contents`, consider creating custom code for your path element
-    /// @param attributes The attributes of the path, as bytes
-    /// @param contents The contents of the path, as bytes
-    /// @return a bytes collection representing a `path` element
-    function createPath(bytes memory attributes, bytes memory contents) internal pure returns (bytes memory) {
-        return abi.encodePacked("<path ", attributes, ">", contents, "</path>");
-        /* This produces ideal output, but it consumes too many bytes in the contract (consider an assembly version)
-        return abi.encodePacked(
-            attributes.length == 0 ? "<path" : "<path ", attributes,
-            contents.length == 0 ? "/>" : ">", contents, "</path>"
-        ); */
+    /// Returns the root SVG attributes based on the supplied width and height
+    /// @dev includes necessary leading space for createElement's `attributes` parameter
+    /// @param width The width of the SVG view box
+    /// @param height The height of the SVG view box
+    /// @return a bytes collection representing the root SVG attributes, including a leading space
+    function svgAttributes(uint256 width, uint256 height) internal pure returns (bytes memory) {
+        return abi.encodePacked(" viewBox='0 0 ", width.toString(), " ", height.toString(), "' xmlns='http://www.w3.org/2000/svg' version='1.1'");
     }
 
     /// Returns an RGB bytes collection suitable as an attribute for SVG elements based on the supplied Color and ColorType
     /// @dev includes necessary leading space for all types _except_ None
-    /// @param color The `ISVGTypes.Color` to convert into a string
     /// @param colorType The `ISVGTypes.ColorType` of the desired attribute
+    /// @param colorValue The converted color value as bytes
     /// @return a bytes collection representing a color attribute in an SVG element
-    function colorAttribute(ISVGTypes.Color memory color, ISVGTypes.ColorType colorType) internal pure returns (bytes memory) {
-        if (colorType == ISVGTypes.ColorType.Fill) return abi.encodePacked(" fill='rgb(", _rawColor(color), ")'");
-        if (colorType == ISVGTypes.ColorType.Stroke) return abi.encodePacked(" stroke='rgb(", _rawColor(color), ")'");
-        return abi.encodePacked("rgb(", _rawColor(color), ")"); // Fallback to None
+    function colorAttribute(ISVGTypes.ColorAttributeType colorType, bytes memory colorValue) internal pure returns (bytes memory) {
+        if (colorType == ISVGTypes.ColorAttributeType.Fill) return _attribute("fill", colorValue);
+        if (colorType == ISVGTypes.ColorAttributeType.Stop) return _attribute("stop-color", colorValue);
+        return  _attribute("stroke", colorValue); // Fallback to Stroke
+    }
+
+    /// Returns an RGB color attribute value
+    /// @param color The `ISVGTypes.Color` of the color
+    /// @return a bytes collection representing the url attribute value
+    function colorAttributeRGBValue(ISVGTypes.Color memory color) internal pure returns (bytes memory) {
+        return _colorValue(ISVGTypes.ColorAttributeValueType.RGB, OnChain.commaSeparated(
+            bytes(uint256(color.red).toString()),
+            bytes(uint256(color.green).toString()),
+            bytes(uint256(color.blue).toString())
+        ));
+    }
+
+    /// Returns a URL color attribute value
+    /// @param url The url to the color
+    /// @return a bytes collection representing the url attribute value
+    function colorAttributeURLValue(bytes memory url) internal pure returns (bytes memory) {
+        return _colorValue(ISVGTypes.ColorAttributeValueType.URL, url);
     }
 
     /// Returns an `ISVGTypes.Color` that is brightened by the provided percentage
@@ -98,6 +119,10 @@ library SVG {
         color.alpha = 0xFF;
     }
 
+    function _attribute(bytes memory name, bytes memory contents) private pure returns (bytes memory) {
+        return abi.encodePacked(" ", name, "='", contents, "'");
+    }
+
     function _brightenComponent(uint8 component, uint32 percentage, uint8 minimumBump) private pure returns (uint8 result) {
         uint32 wideComponent = uint32(component);
         uint32 brightenedComponent = wideComponent * (percentage + 100) / 100;
@@ -112,6 +137,10 @@ library SVG {
         }
     }
 
+    function _colorValue(ISVGTypes.ColorAttributeValueType valueType, bytes memory contents) private pure returns (bytes memory) {
+        return abi.encodePacked(valueType == ISVGTypes.ColorAttributeValueType.RGB ? "rgb(" : "url(#", contents, ")");
+    }
+
     function _mixComponents(uint8 component1, uint8 component2, uint32 ratioPercentage, uint32 totalPercentage) private pure returns (uint8 component) {
         uint32 mixedComponent = (uint32(component1) * ratioPercentage + uint32(component2) * (100 - ratioPercentage)) * totalPercentage / 10000;
         if (mixedComponent > 0xFF) {
@@ -123,9 +152,5 @@ library SVG {
 
     function _randomizeComponent(uint8 floor, uint8 ceiling, uint8 random, uint16 percent) private pure returns (uint8 component) {
         component = floor + uint8(uint16(ceiling - (random & 0x01) - floor) * percent / uint16(100));
-    }
-
-    function _rawColor(ISVGTypes.Color memory color) private pure returns (bytes memory) {
-        return abi.encodePacked(uint256(color.red).toString(), ",", uint256(color.green).toString(), ",", uint256(color.blue).toString());
     }
 }

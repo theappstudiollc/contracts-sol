@@ -13,8 +13,13 @@ interface ISVGTypes {
         uint8 alpha;
     }
 
-    /// Represents a color type in an SVG image file
-    enum ColorType {
-        Fill, Stroke, None
+    /// Represents a color attribute type in an SVG image file
+    enum ColorAttributeType {
+        Fill, Stroke, Stop
+    }
+    
+    /// Represents a color attribute value in an SVG image file
+    enum ColorAttributeValueType {
+        RGB, URL
     }
 }

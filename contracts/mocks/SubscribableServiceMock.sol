@@ -2,6 +2,7 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 import "../utils/SubscribableService.sol";
 
 /// @title Mock class for unit testing SubscribableService.sol
@@ -33,8 +34,8 @@ contract SubscribableServiceMock is SubscribableService, Ownable {
 
     /// Withdraws all funds to the owner's wallet
     /// @dev Also resets the collected fees
-    function withdraw() public payable onlyOwner {
-        payable(owner()).transfer(address(this).balance);
+    function withdraw() public onlyOwner {
+        Address.sendValue(payable(owner()), address(this).balance);
         _collectedFees = 0;
     }
 }

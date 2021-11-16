@@ -5,21 +5,31 @@ import "../utils/SVG.sol";
 
 /// @title Mock class for unit testing SVG.sol
 contract SVGMock {
-    
-    /// Returns the root SVG element based on the supplied width, height, and contents
-    function createSVG(uint256 width, uint256 height, string memory contents) public pure returns (string memory) {
-        return string(SVG.createSVG(width, height, bytes(contents)));
-    }
 
-    /// Returns a `path` SVG element with the provided attributes and contents
-    function createPath(string memory attributes, string memory contents) public pure returns (string memory) {
-        return string(SVG.createPath(bytes(attributes), bytes(contents)));
+    /// Returns a named element based on the supplied attributes and contents
+    function createElement(string memory name, string memory attributes, string memory contents) public pure returns (string memory) {
+        return string(SVG.createElement(name, bytes(attributes), bytes(contents)));
+    }
+    
+    /// Returns the root SVG attributes based on the supplied width and height
+    function svgAttributes(uint256 width, uint256 height) public pure returns (string memory) {
+        return string(SVG.svgAttributes(width, height));
     }
 
     /// Returns an RGB string suitable as an attribute for SVG elements based on the supplied Color and ColorType
     /// @dev includes necessary leading space for all types _except_ None
-    function colorAttribute(ISVGTypes.Color memory color, ISVGTypes.ColorType colorType) public pure returns (string memory) {
-        return string(SVG.colorAttribute(color, colorType));
+    function colorAttribute(ISVGTypes.ColorAttributeType colorType, string memory colorValue) public pure returns (string memory) {
+        return string(SVG.colorAttribute(colorType, bytes(colorValue)));
+    }
+
+    /// Returns an RGB color attribute value
+    function colorAttributeRGBValue(ISVGTypes.Color memory color) public pure returns (string memory) {
+        return string(SVG.colorAttributeRGBValue(color));
+    }
+
+    /// Returns a URL color attribute value
+    function colorAttributeURLValue(string memory url) public pure returns (string memory) {
+        return string(SVG.colorAttributeURLValue(bytes(url)));
     }
 
     /// Returns a Color that is brightened by the provided percentage

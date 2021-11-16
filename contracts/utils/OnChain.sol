@@ -4,6 +4,10 @@ pragma solidity ^0.8.4;
 import "base64-sol/base64.sol";
 
 /// @title OnChain metadata support library
+/**
+ * @dev These methods are best suited towards view/pure only function calls (ALL the way through the call stack).
+ * Do not waste gas using these methods in functions that also update state, unless your need requires it.
+ */
 library OnChain {
 
     /// Returns the prefix needed for a base64-encoded on chain svg image
@@ -21,7 +25,7 @@ library OnChain {
     /// @param contents2 The second content to join
     /// @return A collection of bytes that represent all contents joined with a comma
     function commaSeparated(bytes memory contents1, bytes memory contents2) internal pure returns (bytes memory) {
-        return abi.encodePacked(contents1, ",", contents2);
+        return abi.encodePacked(contents1, continuesWith(contents2));
     }
 
     /// Returns the contents joined with commas between them
@@ -30,7 +34,7 @@ library OnChain {
     /// @param contents3 The third content to join
     /// @return A collection of bytes that represent all contents joined with commas
     function commaSeparated(bytes memory contents1, bytes memory contents2, bytes memory contents3) internal pure returns (bytes memory) {
-        return abi.encodePacked(commaSeparated(contents1, contents2), ",", contents3);
+        return abi.encodePacked(commaSeparated(contents1, contents2), continuesWith(contents3));
     }
 
     /// Returns the contents joined with commas between them
@@ -40,7 +44,7 @@ library OnChain {
     /// @param contents4 The fourth content to join
     /// @return A collection of bytes that represent all contents joined with commas
     function commaSeparated(bytes memory contents1, bytes memory contents2, bytes memory contents3, bytes memory contents4) internal pure returns (bytes memory) {
-        return abi.encodePacked(commaSeparated(contents1, contents2, contents3), ",", contents4);
+        return abi.encodePacked(commaSeparated(contents1, contents2, contents3), continuesWith(contents4));
     }
 
     /// Returns the contents joined with commas between them
@@ -51,7 +55,7 @@ library OnChain {
     /// @param contents5 The fifth content to join
     /// @return A collection of bytes that represent all contents joined with commas
     function commaSeparated(bytes memory contents1, bytes memory contents2, bytes memory contents3, bytes memory contents4, bytes memory contents5) internal pure returns (bytes memory) {
-        return abi.encodePacked(commaSeparated(contents1, contents2, contents3, contents4), ",", contents5);
+        return abi.encodePacked(commaSeparated(contents1, contents2, contents3, contents4), continuesWith(contents5));
     }
 
     /// Returns the contents joined with commas between them
@@ -63,7 +67,7 @@ library OnChain {
     /// @param contents6 The sixth content to join
     /// @return A collection of bytes that represent all contents joined with commas
     function commaSeparated(bytes memory contents1, bytes memory contents2, bytes memory contents3, bytes memory contents4, bytes memory contents5, bytes memory contents6) internal pure returns (bytes memory) {
-        return abi.encodePacked(commaSeparated(contents1, contents2, contents3, contents4, contents5), ",", contents6);
+        return abi.encodePacked(commaSeparated(contents1, contents2, contents3, contents4, contents5), continuesWith(contents6));
     }
 
     /// Returns the contents prefixed by a comma

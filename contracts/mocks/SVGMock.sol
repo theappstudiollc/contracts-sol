@@ -10,7 +10,7 @@ contract SVGMock {
     function createElement(string memory name, string memory attributes, string memory contents) public pure returns (string memory) {
         return string(SVG.createElement(name, bytes(attributes), bytes(contents)));
     }
-    
+
     /// Returns the root SVG attributes based on the supplied width and height
     function svgAttributes(uint256 width, uint256 height) public pure returns (string memory) {
         return string(SVG.svgAttributes(width, height));
@@ -47,8 +47,8 @@ contract SVGMock {
         return SVG.mixColors(color1, color2, ratioPercentage, totalPercentage);
     }
 
-    /// Returns a proportionally-randomized Color between the floor and ceiling colors using a random Color seed
-    function randomizeColors(ISVGTypes.Color memory floor, ISVGTypes.Color memory ceiling, ISVGTypes.Color memory random) public pure returns (ISVGTypes.Color memory color) {
-        return SVG.randomizeColors(floor, ceiling, random);
+    /// Returns a proportionally-randomized Color between the start and stop colors using a random Color seed
+    function randomizeColors(ISVGTypes.Color memory start, ISVGTypes.Color memory stop, ISVGTypes.Color memory random) public pure returns (ISVGTypes.Color memory color) {
+        return SVG.randomizeColors(start, stop, random);
     }
 }

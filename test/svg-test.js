@@ -19,25 +19,30 @@ describe("SVG", function () {
 
     it("Should be floor color", async function() {
         expectColorToEqual(await svg.randomizeColors(black, white, black), 0x000000)
+        expectColorToEqual(await svg.randomizeColors(white, black, black), 0x000000)
     })
 
     it("Should be middle color", async function() {
         expectColorToEqual(await svg.randomizeColors(black, white, middleRandom), 0x7F7F7F)
+        expectColorToEqual(await svg.randomizeColors(white, black, middleRandom), 0x7F7F7F)
     })
 
     it("Should be ceiling color", async function() {
         expectColorToEqual(await svg.randomizeColors(black, white, brightestRandom), 0xFFFFFF)
+        expectColorToEqual(await svg.randomizeColors(white, black, brightestRandom), 0xFFFFFF)
     })
 
     it("Should not crash with tight color", async function() {
+        expectColorToEqual(await svg.randomizeColors(black, black, [0x43, 0x11, 0xDA, 0xFF]), 0x000000)
         expectColorToEqual(await svg.randomizeColors(black, one, [0x43, 0x11, 0xDA, 0xFF]), 0x000001)
+        expectColorToEqual(await svg.randomizeColors(one, one, [0x43, 0x11, 0xDA, 0xFF]), 0x010101)
     })
-    
+
     it("Should generate proper svg attributes", async function () {
         var width = 180, height = 360
-        expect(await svg.svgAttributes(width, height)).to.equal(` viewBox='0 0 ${width} ${height}' xmlns='http://www.w3.org/2000/svg' version='1.1'`)
+        expect(await svg.svgAttributes(width, height)).to.equal(` viewBox='0 0 ${width} ${height}' xmlns='http://www.w3.org/2000/svg'`)
     })
-    
+
     it("Should generate proper path element", async function () {
         expect(await svg.createElement("path", "", "")).to.equal("<path/>")
         expect(await svg.createElement("path", " id='name'", "")).to.equal("<path id='name'/>")
@@ -55,7 +60,7 @@ describe("SVG", function () {
     it("Should generate url color attribute values", async function () {
         expect(await svg.colorAttributeURLValue("testId")).to.equal("url(#testId)")
     })
-    
+
     it("Should generate correct svg color attribute strings", async function () {
         var rgbColor = await svg.colorAttributeRGBValue(zeroOneTwo)
         expect(await svg.colorAttribute(0, rgbColor)).to.equal(" fill='rgb(0,1,2)'")
@@ -68,7 +73,7 @@ describe("SVG", function () {
         expectColorToEqual(await svg.fromPackedColor(0x010101), 0x010101, "one")
         expectColorToEqual(await svg.fromPackedColor(0xFFFFFF), 0xFFFFFF, "white")
     })
-    
+
     it("Should generate svg color type error", async function () {
         await expect(svg.colorAttribute(zeroOneTwo, 3)).to.be.reverted
     })

@@ -34,7 +34,7 @@ library SVG {
     /// @param height The height of the SVG view box
     /// @return a bytes collection representing the root SVG attributes, including a leading space
     function svgAttributes(uint256 width, uint256 height) internal pure returns (bytes memory) {
-        return abi.encodePacked(" viewBox='0 0 ", width.toString(), " ", height.toString(), "' xmlns='http://www.w3.org/2000/svg' version='1.1'");
+        return abi.encodePacked(" viewBox='0 0 ", width.toString(), " ", height.toString(), "' xmlns='http://www.w3.org/2000/svg'");
     }
 
     /// Returns an RGB bytes collection suitable as an attribute for SVG elements based on the supplied Color and ColorType
@@ -105,17 +105,17 @@ library SVG {
         color.alpha = _mixComponents(color1.alpha, color2.alpha, ratioPercentage, totalPercentage);
     }
 
-    /// Returns a proportionally-randomized Color between the floor and ceiling colors using a random Color seed
-    /// @dev This algorithm does not support floor rgb values matching ceiling rgb values (ceiling must be at least +1 higher for each component)
-    /// @param floor The lower bound of the `ISVGTypes.Color` to randomize
-    /// @param ceiling The upper bound of the `ISVGTypes.Color` to randomize
+    /// Returns a proportionally-randomized Color between the start and stop colors using a random Color seed
+    /// @dev Each component (r,g,b) will move proportionally together in the direction from start to stop
+    /// @param start The starting bound of the `ISVGTypes.Color` to randomize
+    /// @param stop The stopping bound of the `ISVGTypes.Color` to randomize
     /// @param random An `ISVGTypes.Color` to use as a seed for randomization
     /// @return color representing the result of the randomization
-    function randomizeColors(ISVGTypes.Color memory floor, ISVGTypes.Color memory ceiling, ISVGTypes.Color memory random) internal pure returns (ISVGTypes.Color memory color) {
+    function randomizeColors(ISVGTypes.Color memory start, ISVGTypes.Color memory stop, ISVGTypes.Color memory random) internal pure returns (ISVGTypes.Color memory color) {
         uint16 percent = (uint16(random.red) + uint16(random.green) + uint16(random.blue)) % 101; // Range is from 0-100
-        color.red = _randomizeComponent(floor.red, ceiling.red, random.red, percent);
-        color.green = _randomizeComponent(floor.green, ceiling.green, random.green, percent);
-        color.blue = _randomizeComponent(floor.blue, ceiling.blue, random.blue, percent);
+        color.red = _randomizeComponent(start.red, stop.red, random.red, percent);
+        color.green = _randomizeComponent(start.green, stop.green, random.green, percent);
+        color.blue = _randomizeComponent(start.blue, stop.blue, random.blue, percent);
         color.alpha = 0xFF;
     }
 
@@ -150,7 +150,12 @@ library SVG {
         }
     }
 
-    function _randomizeComponent(uint8 floor, uint8 ceiling, uint8 random, uint16 percent) private pure returns (uint8 component) {
-        component = floor + uint8(uint16(ceiling - (random & 0x01) - floor) * percent / uint16(100));
+    function _randomizeComponent(uint8 start, uint8 stop, uint8 random, uint16 percent) private pure returns (uint8 component) {
+        if (start == stop) {
+            component = start;
+        } else { // This is the standard case
+            (uint8 floor, uint8 ceiling) = start < stop ? (start, stop) : (stop, start);
+            component = floor + uint8(uint16(ceiling - (random & 0x01) - floor) * percent / uint16(100));
+        }
     }
 }

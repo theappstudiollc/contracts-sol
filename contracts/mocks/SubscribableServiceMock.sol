@@ -33,7 +33,7 @@ contract SubscribableServiceMock is SubscribableService, Ownable {
     }
 
     /// Withdraws all funds to the owner's wallet
-    /// @dev Also resets the collected fees
+    /// @dev Also resets the collected fees (for unit tests)
     function withdraw() public onlyOwner {
         Address.sendValue(payable(owner()), address(this).balance);
         _collectedFees = 0;

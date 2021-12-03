@@ -20,7 +20,7 @@ error InvalidSubscriptionPrice();
 /// @notice Subclassors should not forget to include some kind of withdraw function that provides access to the subscription fees
 abstract contract SubscribableService is ISubscribableService, Context, ReentrancyGuard {
 
-    /// Contains information about subscribers, 
+    /// Contains information about subscribers
     struct Subscribers {
         address[] addresses;
         mapping (address => bool) lookup;
@@ -36,7 +36,7 @@ abstract contract SubscribableService is ISubscribableService, Context, Reentran
     uint256 internal _subscriptionPrice;
 
     /// The total of subscription fees collected
-    /// @dev This value is internal in case subclasses wish to withdraw contract balances that are specific to subscriptions
+    /// @dev This value is internal in case subclasses wish to modify the value upon withdrawal or other change to the balance
     uint256 internal _collectedFees;
 
     /// Constructs a new instance of the SubscribableService support contract

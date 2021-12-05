@@ -18,8 +18,8 @@ contract SVGMock {
 
     /// Returns an RGB string suitable as an attribute for SVG elements based on the supplied Color and ColorType
     /// @dev includes necessary leading space for all types _except_ None
-    function colorAttribute(ISVGTypes.ColorAttributeType colorType, string memory colorValue) public pure returns (string memory) {
-        return string(SVG.colorAttribute(colorType, bytes(colorValue)));
+    function colorAttribute(ISVGTypes.ColorAttribute attribute, string memory value) public pure returns (string memory) {
+        return string(SVG.colorAttribute(attribute, bytes(value)));
     }
 
     /// Returns an RGB color attribute value

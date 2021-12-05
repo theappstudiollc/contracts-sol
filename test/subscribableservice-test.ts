@@ -1,9 +1,10 @@
-const { expect } = require("chai")
-const { ethers } = require("hardhat")
+import { expect } from "chai"
+import { ethers } from "hardhat"
+import { SubscribableServiceMock } from "../typechain-types"
 
 describe("SubscribableService", function () {
 
-    let subscribableService
+    let subscribableService: SubscribableServiceMock
     let subscriptionPrice = 0.01 // ETH
 
     beforeEach(async () => {

@@ -1,15 +1,17 @@
-const { expect } = require("chai")
-const { ethers } = require("hardhat")
+import { expect } from "chai"
+import { ethers } from "hardhat"
+import { SVGMock } from "../typechain-types"
+import { ColorStruct, ColorStructOutput } from "../typechain-types/SVGMock"
 
 describe("SVG", function () {
 
-    let svg
-    let black = [0x0, 0x0, 0x0, 0xFF]
-    let one = [0x1, 0x1, 0x1, 0xFF]
-    let white = [0xFF, 0xFF, 0xFF, 0xFF]
-    let zeroOneTwo = [0x0, 0x1, 0x2, 0xFF]
-    let middleRandom = [152, 152, 150, 0xFF] // rgb even, results in 50%
-    let brightestRandom = [100, 100, 102, 0xFF] // rgb even, results in 100%
+    let svg: SVGMock
+    let black: ColorStruct = { red: 0x0, green: 0x0, blue: 0x0, alpha: 0xFF }
+    let one: ColorStruct = { red: 0x1, green: 0x1, blue: 0x1, alpha: 0xFF }
+    let white: ColorStruct = { red: 0xFF, green: 0xFF, blue: 0xFF, alpha: 0xFF }
+    let zeroOneTwo: ColorStruct = { red: 0x0, green: 0x1, blue: 0x2, alpha: 0xFF }
+    let middleRandom: ColorStruct = { red: 126, green: 126, blue: 128, alpha: 0xFF } // rgb even, results in 50%
+    let brightestRandom: ColorStruct = { red: 254, green: 254, blue: 254, alpha: 0xFF } // rgb even, results in 100%
 
     beforeEach(async () => {
         const SVG = await ethers.getContractFactory("SVGMock")
@@ -33,9 +35,39 @@ describe("SVG", function () {
     })
 
     it("Should not crash with tight color", async function() {
-        expectColorToEqual(await svg.randomizeColors(black, black, [0x43, 0x11, 0xDA, 0xFF]), 0x000000)
-        expectColorToEqual(await svg.randomizeColors(black, one, [0x43, 0x11, 0xDA, 0xFF]), 0x000001)
-        expectColorToEqual(await svg.randomizeColors(one, one, [0x43, 0x11, 0xDA, 0xFF]), 0x010101)
+        expectColorToEqual(await svg.randomizeColors(black, black, { red: 0x43, green: 0x11, blue: 0xDA, alpha: 0xFF }), 0x000000, "1")
+        expectColorToEqual(await svg.randomizeColors(black, one, { red: 0x43, green: 0x11, blue: 0xDA, alpha: 0xFF }), 0x000000, "2")
+        expectColorToEqual(await svg.randomizeColors(one, one, { red: 0x43, green: 0x11, blue: 0xDA, alpha: 0xFF }), 0x010101, "3")
+    })
+
+    it("Should spread randomness evenly", async function() {
+        // NOTE: Focus on one color component to ensure a fast test
+        var redHash = new Map<number, number>()
+        for (var component = 0; component < 256; component++) {
+            var red = (await svg.randomizeColors(black, white, { red: component, green: component, blue: component, alpha: 0xFF })).red
+            var count = redHash.get(red)
+            if (count === null || count === undefined) {
+                redHash.set(red, 1)
+            } else {
+                redHash.set(red, count + 1)
+            }
+        }
+        // Each bucket of red should be within 1-3 (expecting 153 buckets)
+        var valueHash = new Map<number, number>()
+        for (let [, value] of redHash) {
+            expect(value).to.be.closeTo(2, 1)
+            var count = valueHash.get(value)
+            if (count === null || count === undefined) {
+                valueHash.set(value, 1)
+            } else {
+                valueHash.set(value, count + 1)
+            }
+        }
+        // The counts within each bucket should be as tight a ratio as possible
+        var bucketDistribution = redHash.size / (1 + 2 + 3) // = 25.5
+        for (let [key, value] of valueHash) {
+            expect(value).to.be.closeTo(bucketDistribution*(4-key), 0.5)
+        }
     })
 
     it("Should generate proper svg attributes", async function () {
@@ -75,15 +107,16 @@ describe("SVG", function () {
     })
 
     it("Should generate svg color type error", async function () {
-        await expect(svg.colorAttribute(zeroOneTwo, 3)).to.be.reverted
+        var rgbColor = await svg.colorAttributeRGBValue(zeroOneTwo)
+        await expect(svg.colorAttribute(3, rgbColor)).to.be.reverted
     })
 
     it("Should brighten by 3%", async function () {
         expectColorToEqual(await svg.brightenColor(black, 3, 0), 0x000000, "black->black")
         expectColorToEqual(await svg.brightenColor(black, 3, 1), 0x010101, "black->1")
         expectColorToEqual(await svg.brightenColor(one, 3, 0), 0x010101, "one->one")
-        expectColorToEqual(await svg.brightenColor([0x21, 0x21, 0x21, 0xFF], 3, 0), 0x212121, "before threshold")
-        expectColorToEqual(await svg.brightenColor([0x22, 0x22, 0x22, 0xFF], 3, 0), 0x232323, "after threshold")
+        expectColorToEqual(await svg.brightenColor({ red: 0x21, green: 0x21, blue: 0x21, alpha: 0xFF }, 3, 0), 0x212121, "before threshold")
+        expectColorToEqual(await svg.brightenColor({ red: 0x22, green: 0x22, blue: 0x22, alpha: 0xFF }, 3, 0), 0x232323, "after threshold")
         expectColorToEqual(await svg.brightenColor(white, 3, 0), 0xFFFFFF, "max limit")
         expectColorToEqual(await svg.brightenColor(white, 3, 1), 0xFFFFFF, "max limit + 1")
     })
@@ -119,10 +152,10 @@ describe("SVG", function () {
         expectColorToEqual(await svg.mixColors(black, white, 0, 97), 0xF7F7F7, "black/white 97")
     })
 
-    var expectColorToEqual = (color, expected, message) => {
-        expect(color[0]).to.equal(expected >> 16, `${message}: red fail`)
-        expect(color[1]).to.equal((expected & 0xFF00) >> 8, `${message}: green fail`)
-        expect(color[2]).to.equal(expected & 0xFF, `${message}: blue fail`)
-        // expect(color[3]).to.equal(0xFF, `${message}: alpha fail`)
+    var expectColorToEqual = (color: ColorStruct, expected: number, message: string = "") => {
+        expect(color.red).to.equal(expected >> 16, `${message}: red fail`)
+        expect(color.green).to.equal((expected & 0xFF00) >> 8, `${message}: green fail`)
+        expect(color.blue).to.equal(expected & 0xFF, `${message}: blue fail`)
+        // expect(color.alpha).to.equal(0xFF, `${message}: alpha fail`)
     }
 })

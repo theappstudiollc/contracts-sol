@@ -1,15 +1,15 @@
-node_modules
-.env
-coverage
+#Node files
 coverage.json
-typechain
+node_modules/
+typechain-types/
 
 #Hardhat files
-cache
-artifacts
-
-#yarn files
-yarn.lock
+cache/
+artifacts/
+coverage/
 
 #Mac files
 .DS_Store
+
+#yarn files
+yarn.lock

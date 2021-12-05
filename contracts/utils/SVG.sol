@@ -39,20 +39,20 @@ library SVG {
 
     /// Returns an RGB bytes collection suitable as an attribute for SVG elements based on the supplied Color and ColorType
     /// @dev includes necessary leading space for all types _except_ None
-    /// @param colorType The `ISVGTypes.ColorType` of the desired attribute
-    /// @param colorValue The converted color value as bytes
+    /// @param attribute The `ISVGTypes.ColorAttribute` of the desired attribute
+    /// @param value The converted color value as bytes
     /// @return a bytes collection representing a color attribute in an SVG element
-    function colorAttribute(ISVGTypes.ColorAttributeType colorType, bytes memory colorValue) internal pure returns (bytes memory) {
-        if (colorType == ISVGTypes.ColorAttributeType.Fill) return _attribute("fill", colorValue);
-        if (colorType == ISVGTypes.ColorAttributeType.Stop) return _attribute("stop-color", colorValue);
-        return  _attribute("stroke", colorValue); // Fallback to Stroke
+    function colorAttribute(ISVGTypes.ColorAttribute attribute, bytes memory value) internal pure returns (bytes memory) {
+        if (attribute == ISVGTypes.ColorAttribute.Fill) return _attribute("fill", value);
+        if (attribute == ISVGTypes.ColorAttribute.Stop) return _attribute("stop-color", value);
+        return  _attribute("stroke", value); // Fallback to Stroke
     }
 
     /// Returns an RGB color attribute value
     /// @param color The `ISVGTypes.Color` of the color
     /// @return a bytes collection representing the url attribute value
     function colorAttributeRGBValue(ISVGTypes.Color memory color) internal pure returns (bytes memory) {
-        return _colorValue(ISVGTypes.ColorAttributeValueType.RGB, OnChain.commaSeparated(
+        return _colorValue(ISVGTypes.ColorAttributeKind.RGB, OnChain.commaSeparated(
             bytes(uint256(color.red).toString()),
             bytes(uint256(color.green).toString()),
             bytes(uint256(color.blue).toString())
@@ -63,7 +63,7 @@ library SVG {
     /// @param url The url to the color
     /// @return a bytes collection representing the url attribute value
     function colorAttributeURLValue(bytes memory url) internal pure returns (bytes memory) {
-        return _colorValue(ISVGTypes.ColorAttributeValueType.URL, url);
+        return _colorValue(ISVGTypes.ColorAttributeKind.URL, url);
     }
 
     /// Returns an `ISVGTypes.Color` that is brightened by the provided percentage
@@ -112,7 +112,7 @@ library SVG {
     /// @param random An `ISVGTypes.Color` to use as a seed for randomization
     /// @return color representing the result of the randomization
     function randomizeColors(ISVGTypes.Color memory start, ISVGTypes.Color memory stop, ISVGTypes.Color memory random) internal pure returns (ISVGTypes.Color memory color) {
-        uint16 percent = (uint16(random.red) + uint16(random.green) + uint16(random.blue)) % 101; // Range is from 0-100
+        uint16 percent = uint16((1320 * (uint(random.red) + uint(random.green) + uint(random.blue)) / 10000) % 101); // Range is from 0-100
         color.red = _randomizeComponent(start.red, stop.red, random.red, percent);
         color.green = _randomizeComponent(start.green, stop.green, random.green, percent);
         color.blue = _randomizeComponent(start.blue, stop.blue, random.blue, percent);
@@ -137,8 +137,8 @@ library SVG {
         }
     }
 
-    function _colorValue(ISVGTypes.ColorAttributeValueType valueType, bytes memory contents) private pure returns (bytes memory) {
-        return abi.encodePacked(valueType == ISVGTypes.ColorAttributeValueType.RGB ? "rgb(" : "url(#", contents, ")");
+    function _colorValue(ISVGTypes.ColorAttributeKind attributeKind, bytes memory contents) private pure returns (bytes memory) {
+        return abi.encodePacked(attributeKind == ISVGTypes.ColorAttributeKind.RGB ? "rgb(" : "url(#", contents, ")");
     }
 
     function _mixComponents(uint8 component1, uint8 component2, uint32 ratioPercentage, uint32 totalPercentage) private pure returns (uint8 component) {

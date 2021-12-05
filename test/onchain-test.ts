@@ -1,9 +1,10 @@
-const { expect } = require("chai")
-const { ethers } = require("hardhat")
+import { expect } from "chai"
+import { ethers } from "hardhat"
+import { OnChainMock } from "../typechain-types"
 
 describe("OnChain", function () {
 
-    let onChain
+    let onChain: OnChainMock
 
     beforeEach(async () => {
         const OnChain = await ethers.getContractFactory("OnChainMock")
@@ -95,7 +96,7 @@ describe("OnChain", function () {
         return "<svg viewBox='0 0 1 2' xmlns='http://www.w3.org/2000/svg' version='1.1'><path id='bottom' d='M0 2 L1 2 1 1 0 1 Z' fill='rgb(65,176,246)'/><path id='top' d='M0 1 L1 1 1 0 0 0 Z' fill='rgb(240,240,240)'/></svg>"
     }
 
-    var expectValidJson = (input, ...expectedKeys) => {
+    var expectValidJson = (input: string, ...expectedKeys: string[]) => {
         // console.log(`input = ${input}`)
         var json = JSON.parse(input)
         expect(json).to.not.be.null

@@ -1,6 +1,6 @@
 {
 	"name": "@theappstudio/solidity",
-	"version": "0.9.5",
+	"version": "0.9.6",
 	"description": "Solidity-based libraries for supporting ERC-721 and ERC-1155 smart contracts",
 	"keywords": [
 		"solidity",

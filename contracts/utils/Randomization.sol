@@ -26,7 +26,7 @@ library Randomization {
         return percentages.length;
     }
 
-    /// Returns a random seed suitable for ERC-721 attribute generation when an Oracle such as ChainLink VRF is not available to a contract
+    /// Returns a random seed suitable for ERC-721 attribute generation when an Oracle such as Chainlink VRF is not available to a contract
     /// @dev Not suitable for mission-critical code. Always be sure to perform an analysis of your randomization before deploying to production
     /// @param initialSeed A uint256 that seeds the randomization function
     /// @return A seed that can be used for attribute generation, which may also be used as the `initialSeed` for a future call

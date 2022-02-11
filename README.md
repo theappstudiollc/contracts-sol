@@ -7,12 +7,13 @@ Currently the feature-set is kept small to ensure that your contract size remain
 Available as a scoped package. Add it to `package.json`:
 
 ```
-"@theappstudio/solidity": "0.9.6"
+"@theappstudio/solidity": "0.9.8"
 ```
 
 and import it in your solidity file:
 
 ```
+import "@theappstudio/solidity/contracts/utils/DecimalStrings.sol";
 import "@theappstudio/solidity/contracts/utils/OnChain.sol";
 import "@theappstudio/solidity/contracts/utils/Randomization.sol";
 import "@theappstudio/solidity/contracts/utils/SVG.sol";

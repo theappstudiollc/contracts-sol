@@ -9,33 +9,33 @@ import "../utils/SubscribableService.sol";
 /// @dev Also serves as a sample for implementing a SubscribableService
 contract SubscribableServiceMock is SubscribableService, Ownable {
 
-    constructor(uint256 price) SubscribableService(price) { }
+	constructor(uint256 price) SubscribableService(price) { }
 
-    /// Sample function that can only be accessed by subscribers
-    function subscribableServiceFunction() public view onlySubscriber returns (bool) {
-        return true;
-    }
+	/// Sample function that can only be accessed by subscribers
+	function subscribableServiceFunction() external view onlySubscriber returns (bool) {
+		return true;
+	}
 
-    /// Changes the price of the subscription for new subscribers
-    function changePrice(uint256 price) public onlyOwner {
-        _subscriptionPrice = price;
-    }
+	/// Changes the price of the subscription for new subscribers
+	function changePrice(uint256 price) external onlyOwner {
+		subscriptionPrice_ = price;
+	}
 
-    /// Provides access to the sum of subscription fees collected
-    function collectedFees() public view returns (uint256) {
-        return _collectedFees;
-    }
+	/// Provides access to the sum of subscription fees collected
+	function collectedFees() external view returns (uint256) {
+		return collectedFees_;
+	}
 
-    /// Returns the internal list of subscribers
-    /// @dev This sample implementation exposes subscribers to everyone
-    function currentSubscribers() public view returns (address[] memory) {
-        return _subscribers.addresses;
-    }
+	/// Returns the internal list of subscribers
+	/// @dev This sample implementation exposes subscribers to everyone
+	function currentSubscribers() external view returns (address[] memory) {
+		return subscribers_.addresses;
+	}
 
-    /// Withdraws all funds to the owner's wallet
-    /// @dev Also resets the collected fees (for unit tests)
-    function withdraw() public onlyOwner {
-        Address.sendValue(payable(owner()), address(this).balance);
-        _collectedFees = 0;
-    }
+	/// Withdraws all funds to the owner's wallet
+	/// @dev Also resets the collected fees (for unit tests)
+	function withdraw() external onlyOwner {
+		collectedFees_ = 0;
+		Address.sendValue(payable(owner()), address(this).balance);
+	}
 }

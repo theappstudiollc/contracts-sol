@@ -1,6 +1,6 @@
 {
 	"name": "@theappstudio/solidity",
-	"version": "0.9.7",
+	"version": "0.9.8",
 	"description": "Solidity-based libraries for supporting ERC-721 and ERC-1155 smart contracts",
 	"keywords": [
 		"solidity",
@@ -18,8 +18,7 @@
 	],
 	"repository": "git+https://github.com/theappstudiollc/contracts-sol.git",
 	"dependencies": {
-		"@openzeppelin/contracts": "^4.0",
-		"base64-sol": "^1.1.0"
+		"@openzeppelin/contracts": "^4.5.0"
 	},
 	"devDependencies": {
 		"@nomiclabs/hardhat-ethers": "^2.0.0",

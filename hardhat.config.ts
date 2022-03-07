@@ -11,7 +11,7 @@ const config: HardhatUserConfig = {
 	solidity: {
 		compilers: [
 			{
-				version: "0.8.11",
+				version: "0.8.12",
 				settings: {
 					optimizer: { enabled: true }
 				}
@@ -22,6 +22,6 @@ const config: HardhatUserConfig = {
 		enabled: true,
 		currency: "USD",
 	},
-};
+}
 
 export default config

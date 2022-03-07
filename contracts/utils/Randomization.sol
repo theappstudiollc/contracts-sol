@@ -13,14 +13,16 @@ library Randomization {
 	/// @param percentages An array of percentages
 	/// @return The index in which the random seed falls, which can be the length of the input array if the values do not add up to 100
 	function randomIndex(uint8 random, uint8[] memory percentages) internal pure returns (uint256) {
-		uint256 spread = (3921 * uint256(random) / 10000) % 100; // 0-255 needs to be balanced to evenly spread with % 100
-		uint256 remainingPercent = 100;
-		for (uint256 i = 0; i < percentages.length; i++) {
-			uint256 nextPercentage = percentages[i];
-			if (remainingPercent < nextPercentage) revert PercentagesGreaterThan100();
-			remainingPercent -= nextPercentage;
-			if (spread >= remainingPercent) {
-				return i;
+		unchecked { // `spread` is bounded with uint8 max, `i` is bounded by `percentages`, `remainingPercent` is checked before -=
+			uint256 spread = (3921 * uint256(random) / 10000) % 100; // 0-255 needs to be balanced to evenly spread with % 100
+			uint256 remainingPercent = 100;
+			for (uint256 i = 0; i < percentages.length; i++) {
+				uint256 nextPercentage = percentages[i];
+				if (remainingPercent < nextPercentage) revert PercentagesGreaterThan100();
+				remainingPercent -= nextPercentage;
+				if (spread >= remainingPercent) {
+					return i;
+				}
 			}
 		}
 		return percentages.length;

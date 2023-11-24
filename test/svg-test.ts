@@ -1,7 +1,7 @@
 import { expect } from "chai"
 import { ethers } from "hardhat"
 import { SVGMock } from "../typechain-types"
-import { ISVGTypes } from "../typechain-types/SVGMock"
+import { ISVGTypes } from "../typechain-types/contracts/mocks/SVGMock"
 
 describe("SVG", function () {
 
@@ -16,7 +16,7 @@ describe("SVG", function () {
 	beforeEach(async () => {
 		const SVG = await ethers.getContractFactory("SVGMock")
 		svg = await SVG.deploy()
-		await svg.deployed()
+		await svg.waitForDeployment()
 	})
 
 	it("Should be floor color", async function() {
@@ -42,7 +42,7 @@ describe("SVG", function () {
 
 	it("Should spread randomness evenly", async function() {
 		// NOTE: Focus on one color component to ensure a fast test
-		var redHash = new Map<number, number>()
+		var redHash = new Map<bigint, number>()
 		for (var component = 0; component < 256; component++) {
 			var red = (await svg.randomizeColors(black, white, { red: component, green: component, blue: component, alpha: 0xFF })).red
 			var count = redHash.get(red)
@@ -136,7 +136,7 @@ describe("SVG", function () {
 	})
 
 	it("Should revert with RatioInvalid", async function() {
-		await expect(svg.mixColors(black, white, 101, 100)).to.be.revertedWith("RatioInvalid")
+		await expect(svg.mixColors(black, white, 101, 100)).to.be.revertedWithCustomError(svg, "RatioInvalid")
 	})
 
 	it("Should mix colors matching black", async function () {

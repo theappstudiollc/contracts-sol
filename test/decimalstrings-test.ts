@@ -10,7 +10,7 @@ describe("DecimalStrings", function () {
 		// Deploy DecimalStringsMock
 		const DecimalStringsMock = await ethers.getContractFactory("DecimalStringsMock") as DecimalStringsMock__factory
 		decimalStrings = await DecimalStringsMock.deploy()
-		await decimalStrings.deployed()
+		await decimalStrings.waitForDeployment()
 	})
 
 	it("Should return formatted number as string with 0 to 18 decimals", async function () {

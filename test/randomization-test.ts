@@ -11,13 +11,13 @@ describe("Randomization", function () {
 	beforeEach(async () => {
 		const Randomization = await ethers.getContractFactory("RandomizationMock")
 		randomization = await Randomization.deploy(initialSeed)
-		await randomization.deployed()
+		await randomization.waitForDeployment()
 	})
 
 	it("Should fail with PercentagesGreaterThan100", async function() {
 		const percentages = [38, 33, 19, 11] // This adds up to 101 (last should be 10)
 		for (var i = 0; i <= 25; i++) {
-			await expect(randomization.randomIndex(i, percentages), `i=${i}`).to.be.revertedWith("PercentagesGreaterThan100")
+			await expect(randomization.randomIndex(i, percentages), `i=${i}`).to.be.revertedWithCustomError(randomization, "PercentagesGreaterThan100")
 		}
 		for (var i = 26; i < 256; i++) {
 			await expect(randomization.randomIndex(i, percentages), `i=${i}`).to.not.be.reverted
@@ -29,7 +29,7 @@ describe("Randomization", function () {
 		var buckets = [0, 0, 0, 0, 0]
 		for (var i = 0; i < 255; i++) {
 			var bucket = await randomization.randomIndex(i, percentages)
-			buckets[bucket.toNumber()] += 1
+			buckets[Number(bucket)] += 1
 		}
 		for (var i = 0; i < buckets.length; i++) {
 			var result = buckets[i] * 100 / 255
@@ -44,7 +44,7 @@ describe("Randomization", function () {
 		var buckets = [0, 0, 0, 0, 0]
 		for (var i = 0; i < 255; i++) {
 			var bucket = await randomization.randomIndex(i, percentages)
-			buckets[bucket.toNumber()] += 1
+			buckets[Number(bucket)] += 1
 		}
 		for (var i = 0; i < buckets.length; i++) {
 			var result = buckets[i] * 100 / 255
@@ -60,7 +60,7 @@ describe("Randomization", function () {
 		var buckets = new Map<number, number>()
 		for (var i = 0; i < 255; i++) {
 			var nextSeed = await randomization.randomSeed(seed)
-			var bucket = parseInt(nextSeed.mask(8).toString())
+			var bucket = parseInt((nextSeed & 0xFFn).toString())
 			var count = buckets.get(bucket)
 			if (count === null || count === undefined) {
 				buckets.set(bucket, 1)
@@ -76,7 +76,7 @@ describe("Randomization", function () {
 	})
 
 	it("Should report gas for randomSeed()", async function() {
-		var promises = new Array<Promise<ContractTransaction>>()
+		var promises = new Array<Promise<any>>()
 		for (var i = 0; i < 10; i++) {
 			promises.push(randomization.randomSeedCost())
 		}

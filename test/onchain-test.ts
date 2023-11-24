@@ -9,7 +9,7 @@ describe("OnChain", function () {
 	beforeEach(async () => {
 		const OnChain = await ethers.getContractFactory("OnChainMock")
 		onChain = await OnChain.deploy()
-		await onChain.deployed()
+		await onChain.waitForDeployment()
 	})
 
 	it("Should be base uri suitable for on-chain metadata", async function() {

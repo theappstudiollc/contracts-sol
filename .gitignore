@@ -13,3 +13,4 @@ coverage/
 
 #yarn files
 yarn.lock
+yarn-error.log

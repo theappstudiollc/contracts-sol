@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
 import "../interfaces/ISubscribableService.sol";
 
@@ -18,7 +17,7 @@ error InvalidSubscriptionPrice();
 /// @title Support contract for enabling subscriptions to services
 /// @dev This contract is meant to be a subclass of a contract that provides a service
 /// @notice Subclassors should not forget to include some kind of withdraw function that provides access to the subscription fees
-abstract contract SubscribableService is ISubscribableService, Context, ReentrancyGuard {
+abstract contract SubscribableService is ISubscribableService, Context {
 
 	/// Contains information about subscribers
 	struct Subscribers {
@@ -65,7 +64,7 @@ abstract contract SubscribableService is ISubscribableService, Context, Reentran
 
 	/// Subscribes to the service, passing in the subscriptionPrice as payable
 	/// @param subscriber The address that is allowed to make calls to the service
-	function subscribe(address subscriber) external payable nonReentrant {
+	function subscribe(address subscriber) external payable {
 		if (msg.value < subscriptionPrice()) revert InvalidSubscriptionPrice();
 		if (subscribers_.lookup[subscriber]) revert AddressAlreadySubscribed();
 		subscribers_.addresses.push(subscriber);

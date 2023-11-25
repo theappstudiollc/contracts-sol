@@ -1,6 +1,8 @@
 import { expect } from "chai"
 import { ethers } from "hardhat"
+import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers"
 import { SubscribableServiceMock } from "../typechain-types"
+import { TransactionResponse, ZeroAddress } from "ethers"
 
 describe("SubscribableService", function () {
 
@@ -89,4 +91,27 @@ describe("SubscribableService", function () {
 		await subscribableService.subscribe(owner.address, { value: price })
 		expect(await subscribableService.subscribableServiceFunction()).to.be.true
 	})
+
+	it("Should fail with OnlyOwner", async function () {
+		var onlyOwner = "Ownable: caller is not the owner"
+		await sendEth(1, ZeroAddress)
+		const impersonatedSigner = await impersonate(ZeroAddress)
+		await expect(subscribableService.connect(impersonatedSigner).changePrice(500)).to.be.revertedWith(onlyOwner)
+		await expect(subscribableService.connect(impersonatedSigner).withdraw()).to.be.revertedWith(onlyOwner)
+	})
+
+	async function impersonate(account: string): Promise<SignerWithAddress> {
+		await ethers.provider.send("hardhat_impersonateAccount", [account]);
+		return ethers.getSigner(account)
+	}
+
+	async function sendAmount(amount: bigint, address: string): Promise<TransactionResponse> {
+		const accounts = await ethers.getSigners()
+		const signer = accounts[0]
+		return signer.sendTransaction({ to: address, value: amount })
+	}
+
+	async function sendEth(ether: number, address: string): Promise<TransactionResponse> {
+		return sendAmount(ethers.parseEther(ether.toString()), address)
+	}
 })

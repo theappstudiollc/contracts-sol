@@ -1,4 +1,3 @@
-import { ContractTransaction } from "@ethersproject/contracts"
 import { expect } from "chai"
 import { ethers } from "hardhat"
 import { RandomizationMock } from "../typechain-types"
